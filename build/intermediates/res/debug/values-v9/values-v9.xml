@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- From: file:/Users/ali_mac/Desktop/work/tunes/demo/tunesremote-plus/res/values-v9/styles.xml -->
+    <eat-comment/>
+    <style name="NotificationText" parent="android:TextAppearance.StatusBar.EventContent"/>
+    <style name="NotificationTitle" parent="android:TextAppearance.StatusBar.EventContent.Title"/>
+</resources>

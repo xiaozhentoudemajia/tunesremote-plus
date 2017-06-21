@@ -1,0 +1,74 @@
+# view land\res/layout-land/act_control.xml #generated:46
+# view res/layout/act_control.xml #generated:190
+# view sw600dp-land-v13\res/layout-sw600dp-land-v13/act_control.xml #generated:39
+# view sw600dp-v13\res/layout-sw600dp-v13/act_control.xml #generated:39
+-keep class android.gesture.GestureOverlayView { <init>(...); }
+
+# view res/layout/nui_library_browser.xml #generated:7
+-keep class android.support.v4.view.PagerTitleStrip { <init>(...); }
+
+# view res/layout/act_browse_library.xml #generated:93
+# view res/layout/nui_library_browser.xml #generated:2
+-keep class android.support.v4.view.ViewPager { <init>(...); }
+
+# view AndroidManifest.xml #generated:66
+-keep class org.tunesremote.AlbumsActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:45
+-keep class org.tunesremote.BackendService { <init>(...); }
+
+# view AndroidManifest.xml #generated:48
+-keep class org.tunesremote.ControlActivity { <init>(...); }
+
+# view land\res/layout-land/act_control.xml #generated:26
+# view res/layout/act_control.xml #generated:38
+# view sw600dp-land-v13\res/layout-sw600dp-land-v13/act_control.xml #generated:33
+# view sw600dp-v13\res/layout-sw600dp-v13/act_control.xml #generated:33
+-keep class org.tunesremote.FadeView { <init>(...); }
+
+# view AndroidManifest.xml #generated:57
+-keep class org.tunesremote.LibraryActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:60
+-keep class org.tunesremote.LibraryBrowseActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:105
+-keep class org.tunesremote.NowPlayingActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:63
+-keep class org.tunesremote.PairingActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:72
+-keep class org.tunesremote.PrefsActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:90
+-keep class org.tunesremote.SearchActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:78
+-keep class org.tunesremote.ServerActivity { <init>(...); }
+
+# view land\res/layout-land/act_control.xml #generated:56
+# view sw600dp-land-v13\res/layout-sw600dp-land-v13/act_control.xml #generated:55
+# view sw600dp-v13\res/layout-sw600dp-v13/act_control.xml #generated:181
+-keep class org.tunesremote.SquareCover { <init>(...); }
+
+# view AndroidManifest.xml #generated:69
+-keep class org.tunesremote.TracksActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:75
+-keep class org.tunesremote.WizardActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:110
+-keep class org.tunesremote.util.LockscreenReceiver { <init>(...); }
+
+# view AndroidManifest.xml #generated:46
+-keep class org.tunesremote.util.NotificationService { <init>(...); }
+
+# view AndroidManifest.xml #generated:82
+-keep class org.tunesremote.util.RecentProvider { <init>(...); }
+
+# onClick res/layout/act_browse_library.xml #generated:14
+# onClick res/layout/act_browse_library.xml #generated:40
+# onClick res/layout/act_browse_library.xml #generated:66
+-keepclassmembers class * { *** tabSelected(...); }
+

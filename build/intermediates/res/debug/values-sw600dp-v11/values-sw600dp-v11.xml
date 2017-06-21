@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- From: file:/Users/ali_mac/Desktop/work/tunes/demo/tunesremote-plus/res/values-sw600dp-v11/dimens.xml -->
+    <eat-comment/>
+    <bool name="isArtVariable">false</bool>
+    <dimen name="action_bar_offset">56dip</dimen>
+    <!-- From: file:/Users/ali_mac/Desktop/work/tunes/demo/tunesremote-plus/res/values-sw600dp-v11/strings.xml -->
+    <eat-comment/>
+    <string name="pref_art_summary">Disabled on tablet UI</string>
+</resources>

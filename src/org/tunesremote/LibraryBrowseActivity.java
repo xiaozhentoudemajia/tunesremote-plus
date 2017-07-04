@@ -56,6 +56,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 
 public class LibraryBrowseActivity extends FragmentActivity implements ViewPager.OnPageChangeListener {
 
@@ -163,6 +164,13 @@ public class LibraryBrowseActivity extends FragmentActivity implements ViewPager
             ab.addTab(plyTab);
          }
 
+         Button bt = (Button) findViewById(R.id.library_play_bar);
+         bt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+               startActivity(new Intent(LibraryBrowseActivity.this, ControlActivity.class));
+            }
+         });
       }
 
    }

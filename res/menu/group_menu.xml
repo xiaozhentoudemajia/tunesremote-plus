@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/group_menu_speaker_item"
+        android:icon="@android:drawable/ic_input_add"
+        android:title="@string/group_menu_speaker">
+    </item>
+    <item
+        android:id="@+id/group_menu_rename_item"
+        android:icon="@android:drawable/ic_input_delete"
+        android:title="@string/group_menu_rename">
+    </item>
+
+</menu>

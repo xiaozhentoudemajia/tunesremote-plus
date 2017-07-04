@@ -37,7 +37,9 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.MenuItem.OnMenuItemClickListener;
@@ -45,6 +47,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Toast;
 
 /**
  * Displays a list of servers that can be connected to.
@@ -102,9 +105,35 @@ public class ServerActivity extends ListActivity {
             } catch (Exception ex) {
                Log.e(TAG, ex.getMessage(), ex);
             }
+            startActivity(new Intent(ServerActivity.this, LibraryBrowseActivity.class));
             finish();
          }
       });
+
+      registerForContextMenu(lv);
+   }
+
+   @Override
+   public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+      super.onCreateContextMenu(menu, v, menuInfo);
+
+      MenuInflater menuInflater = getMenuInflater();
+      menuInflater.inflate(R.menu.group_menu, menu);
+   }
+
+   @Override
+   public boolean onContextItemSelected(MenuItem item) {
+      switch (item.getItemId())
+      {
+         case R.id.group_menu_rename_item:
+            Toast.makeText(ServerActivity.this, "Rename Function...", Toast.LENGTH_SHORT).show();
+            break;
+         case R.id.group_menu_speaker_item:
+            Toast.makeText(ServerActivity.this, "Speaker Function...", Toast.LENGTH_SHORT).show();
+            break;
+      }
+
+      return super.onContextItemSelected(item);
    }
 
    @Override

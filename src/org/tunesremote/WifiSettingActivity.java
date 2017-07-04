@@ -1,6 +1,7 @@
 package org.tunesremote;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -47,7 +48,8 @@ public class WifiSettingActivity extends Activity {
             public void onClick(View view) {
                 Log.d(TAG, "dongleSetting load Url");
                 //dongleSetting.loadUrl("http://www.chiphell.com");
-                dongleSetting.loadUrl("http://192.168.111.1/index.html");
+                //dongleSetting.loadUrl("http://192.168.111.1/index.html");
+                startActivity(new Intent(WifiSettingActivity.this, ServerActivity.class));
             }
         });
 

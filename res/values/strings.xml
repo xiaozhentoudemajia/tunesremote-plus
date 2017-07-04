@@ -176,4 +176,6 @@
     <string name="artist">Artist</string>
     <string name="album">Album</string>
 
+    <string name="group_menu_speaker">Speaker</string>
+    <string name="group_menu_rename">Rename</string>
 </resources>

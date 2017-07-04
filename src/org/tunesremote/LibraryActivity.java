@@ -28,18 +28,22 @@ package org.tunesremote;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 
+import org.tunesremote.daap.Speaker;
 import org.tunesremote.util.ClickSpan;
 import org.tunesremote.util.ThreadExecutor;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -54,16 +58,20 @@ import android.os.IBinder;
 import android.os.Message;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -82,6 +90,12 @@ public class LibraryActivity extends Activity implements ServiceListener, ClickS
    private static JmDNS zeroConf = null;
    private static MulticastLock mLock = null;
    private BackendService backend;
+   private static final int DIALOG_SPEAKERS = 1;
+   /**
+    * Instance of the speaker list adapter used in the speakers dialog
+    */
+   protected SpeakersAdapter speakersAdapter;
+   protected final static List<Speaker> SPEAKERS = new ArrayList<Speaker>();
 
    public ServiceConnection connection = new ServiceConnection() {
       public void onServiceConnected(ComponentName className, final IBinder service) {
@@ -422,9 +436,11 @@ public class LibraryActivity extends Activity implements ServiceListener, ClickS
             shell.putExtra(BackendService.EXTRA_ADDRESS, address);
             shell.putExtra(BackendService.EXTRA_LIBRARY, library);
             onActivityResult(-1, Activity.RESULT_OK, shell);
-
+            startActivity(new Intent(LibraryActivity.this, LibraryBrowseActivity.class));
          }
       });
+
+      registerForContextMenu(list);
 
       ThreadExecutor.runTask(new Runnable() {
 
@@ -437,6 +453,159 @@ public class LibraryActivity extends Activity implements ServiceListener, ClickS
          }
       });
 
+      // Speakers adapter needed for the speakers dialog
+      speakersAdapter = new SpeakersAdapter(this);
+
+   }
+
+   public class SpeakersAdapter extends BaseAdapter {
+
+      private final LayoutInflater inflater;
+
+      public SpeakersAdapter(Context context) {
+         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+      }
+
+      public int getCount() {
+         if (SPEAKERS == null) {
+            return 0;
+         }
+         return SPEAKERS.size();
+      }
+
+      public Object getItem(int position) {
+         return SPEAKERS.get(position);
+      }
+
+      public long getItemId(int position) {
+         return position;
+      }
+
+      /**
+       * Toggles activation of a given speaker and refreshes the view
+       * @param active Flag indicating, whether the speaker shall be activated
+       * @param speaker the speaker to be activated or deactivated
+       */
+      public void setSpeakerActive(boolean active, final Speaker speaker) {
+         if (speaker == null) {
+            return;
+         }
+         if (status == null) {
+            return;
+         }
+         speaker.setActive(active);
+
+         ThreadExecutor.runTask(new Runnable() {
+            public void run() {
+               try {
+                  status.setSpeakers(SPEAKERS);
+               } catch (Exception e) {
+                  Log.e(TAG, "Speaker Exception:" + e.getMessage());
+               }
+            }
+
+         });
+
+         notifyDataSetChanged();
+      }
+
+      public View getView(int position, View convertView, ViewGroup parent) {
+         try {
+
+            View row;
+            if (null == convertView) {
+               row = inflater.inflate(R.layout.item_speaker, null);
+            } else {
+               row = convertView;
+            }
+
+            /*************************************************************
+             * Find the necessary sub views
+             *************************************************************/
+            TextView nameTextview = (TextView) row.findViewById(R.id.speakerNameTextView);
+            TextView speakerTypeTextView = (TextView) row.findViewById(R.id.speakerTypeTextView);
+            final CheckBox activeCheckBox = (CheckBox) row.findViewById(R.id.speakerActiveCheckBox);
+            SeekBar volumeBar = (SeekBar) row.findViewById(R.id.speakerVolumeBar);
+
+            /*************************************************************
+             * Set view properties
+             *************************************************************/
+            final Speaker speaker = SPEAKERS.get(position);
+            nameTextview.setText(speaker.getName());
+            speakerTypeTextView.setText(speaker.isLocalSpeaker() ? R.string.speakers_dialog_computer_speaker
+                    : R.string.speakers_dialog_airport_express);
+            activeCheckBox.setChecked(speaker.isActive());
+            activeCheckBox.setOnClickListener(new View.OnClickListener() {
+
+               public void onClick(View v) {
+                  setSpeakerActive(activeCheckBox.isChecked(), speaker);
+               }
+            });
+            nameTextview.setOnClickListener(new View.OnClickListener() {
+
+               public void onClick(View v) {
+                  activeCheckBox.toggle();
+                  setSpeakerActive(activeCheckBox.isChecked(), speaker);
+               }
+            });
+            speakerTypeTextView.setOnClickListener(new View.OnClickListener() {
+
+               public void onClick(View v) {
+                  activeCheckBox.toggle();
+                  setSpeakerActive(activeCheckBox.isChecked(), speaker);
+               }
+            });
+            // If the speaker is active, enable the volume bar
+            if (speaker.isActive()) {
+               volumeBar.setEnabled(true);
+               volumeBar.setProgress(speaker.getAbsoluteVolume());
+               volumeBar.setOnSeekBarChangeListener(new VolumeSeekBarListener(speaker));
+            } else {
+               volumeBar.setEnabled(false);
+               volumeBar.setProgress(0);
+            }
+            return row;
+         } catch (RuntimeException e) {
+            Log.e(TAG, "Error when rendering speaker item: ", e);
+            throw e;
+         }
+      }
+   }
+
+
+   @Override
+   protected Dialog onCreateDialog(int id) {
+      if (id == DIALOG_SPEAKERS) {
+         // Create the speakers dialog (once)
+         return new AlertDialog.Builder(this).setIcon(android.R.drawable.ic_lock_silent_mode_off)
+                 .setTitle(R.string.control_menu_speakers).setAdapter(speakersAdapter, null)
+                 .setPositiveButton("OK", null).create();
+      }
+      return null;
+   }
+
+   @Override
+   public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+      super.onCreateContextMenu(menu, v, menuInfo);
+
+      MenuInflater menuInflater = getMenuInflater();
+      menuInflater.inflate(R.menu.group_menu, menu);
+   }
+
+   @Override
+   public boolean onContextItemSelected(MenuItem item) {
+      switch (item.getItemId())
+      {
+         case R.id.group_menu_rename_item:
+            Toast.makeText(LibraryActivity.this, "Rename Function...", Toast.LENGTH_SHORT).show();
+            break;
+         case R.id.group_menu_speaker_item:
+            Toast.makeText(LibraryActivity.this, "Speaker Function...", Toast.LENGTH_SHORT).show();
+            showDialog(DIALOG_SPEAKERS);
+            break;
+      }
+
+      return super.onContextItemSelected(item);
    }
 
    @Override

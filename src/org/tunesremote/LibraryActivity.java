@@ -37,7 +37,10 @@ import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 
+import org.tunesremote.daap.Response;
+import org.tunesremote.daap.Session;
 import org.tunesremote.daap.Speaker;
+import org.tunesremote.daap.Status;
 import org.tunesremote.util.ClickSpan;
 import org.tunesremote.util.ThreadExecutor;
 
@@ -49,6 +52,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LevelListDrawable;
+import android.graphics.drawable.TransitionDrawable;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
@@ -71,6 +80,7 @@ import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RatingBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -87,10 +97,18 @@ public class LibraryActivity extends Activity implements ServiceListener, ClickS
    public final static String REMOTE_TYPE = "_touch-remote._tcp.local.";
    public final static String HOSTNAME = "tunesremote";
 
+   protected static Session session;
+   protected static Status status;
+
    private static JmDNS zeroConf = null;
    private static MulticastLock mLock = null;
    private BackendService backend;
    private static final int DIALOG_SPEAKERS = 1;
+   public final static long CACHE_TIME = 10000;
+   protected long cachedVolume = -1;
+   protected long cachedTime = -1;
+   protected LevelListDrawable shuffle, repeat, play;
+
    /**
     * Instance of the speaker list adapter used in the speakers dialog
     */
@@ -103,14 +121,71 @@ public class LibraryActivity extends Activity implements ServiceListener, ClickS
 
             public void run() {
                backend = ((BackendService.BackendBinder) service).getService();
+
+               session = backend.getSession();
+               if (session != null) {
+                  // for some reason we are not correctly disposing of
+                  // the session threads we create so we purge any
+                  // existing ones before creating a new one
+                  status = session.singletonStatus(statusUpdate);
+                  status.updateHandler(statusUpdate);
+
+                  // push update through to make sure we get updated
+                  statusUpdate.sendEmptyMessage(Status.UPDATE_SPEAKERS);
+                  statusUpdate.sendEmptyMessage(Status.UPDATE_TRACK);
+               }
             }
          });
 
       }
 
       public void onServiceDisconnected(ComponentName className) {
+         // make sure we clean up our handler-specific status
+         Log.w(TAG, "onServiceDisconnected");
+         status.updateHandler(null);
          backend = null;
+         status = null;
+      }
+   };
 
+   protected Handler statusUpdate = new Handler() {
+
+      @Override
+      public void handleMessage(Message msg) {
+         // update gui based on severity
+         switch (msg.what) {
+            case Status.UPDATE_TRACK:
+
+            case Status.UPDATE_COVER:
+
+            case Status.UPDATE_STATE:
+
+            case Status.UPDATE_PROGRESS:
+               break;
+
+            // This one is triggered by a thread, so should not be used to
+            // update progress, etc...
+            case Status.UPDATE_RATING:
+               break;
+            case Status.UPDATE_SPEAKERS:
+               ThreadExecutor.runTask(new Runnable() {
+                  public void run() {
+                     try {
+                        if (status == null) {
+                           return;
+                        }
+                        status.getSpeakers(SPEAKERS);
+                     } catch (Exception e) {
+                        Log.e(TAG, "Speaker Exception:" + e.getMessage());
+                     }
+                  }
+
+               });
+               break;
+         }
+
+         //checkShuffle();
+         //checkRepeat();
       }
    };
 
@@ -674,6 +749,69 @@ public class LibraryActivity extends Activity implements ServiceListener, ClickS
       }
       return super.onOptionsItemSelected(item);
 
+   }
+
+   /**
+    * OnSeekBarChangeListener that controls the volume for a certain speaker
+    * @author Daniel Thommes
+    */
+   public class VolumeSeekBarListener implements SeekBar.OnSeekBarChangeListener {
+      private final Speaker speaker;
+
+      public VolumeSeekBarListener(Speaker speaker) {
+         this.speaker = speaker;
+      }
+
+      public void onStopTrackingTouch(SeekBar seekBar) {
+         final int newVolume = seekBar.getProgress();
+         ThreadExecutor.runTask(new Runnable() {
+            public void run() {
+               try {
+                  // Volume of the loudest speaker
+                  int maxVolume = 0;
+                  // Volume of the second loudest speaker
+                  int secondMaxVolume = 0;
+                  for (Speaker speaker : SPEAKERS) {
+                     if (speaker.getAbsoluteVolume() > maxVolume) {
+                        secondMaxVolume = maxVolume;
+                        maxVolume = speaker.getAbsoluteVolume();
+                     } else if (speaker.getAbsoluteVolume() > secondMaxVolume) {
+                        secondMaxVolume = speaker.getAbsoluteVolume();
+                     }
+                  }
+                  // fetch the master volume if necessary
+                  checkCachedVolume();
+                  int formerVolume = speaker.getAbsoluteVolume();
+                  status.setSpeakerVolume(speaker.getId(), newVolume, formerVolume, maxVolume, secondMaxVolume,
+                          cachedVolume);
+                  speaker.setAbsoluteVolume(newVolume);
+               } catch (Exception e) {
+                  Log.e(TAG, "Speaker Exception:" + e.getMessage());
+               }
+            }
+
+         });
+      }
+
+      public void onStartTrackingTouch(SeekBar seekBar) {
+      }
+
+      public void onProgressChanged(SeekBar seekBar, int newVolume, boolean fromUser) {
+      }
+   }
+
+   /**
+    * Updates the cachedVolume if necessary
+    */
+   protected void checkCachedVolume() {
+      // try assuming a cached volume instead of requesting it each time
+      if (System.currentTimeMillis() - cachedTime > CACHE_TIME) {
+         if (status == null) {
+            return;
+         }
+         this.cachedVolume = status.getVolume();
+         this.cachedTime = System.currentTimeMillis();
+      }
    }
 
    public class LibraryAdapter extends BaseAdapter {

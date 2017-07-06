@@ -746,6 +746,10 @@ public class LibraryActivity extends Activity implements ServiceListener, ClickS
                   }).create().show();
          return true;
 
+         case R.id.menu_add_device:
+            startActivity(new Intent(this, WifiSettingActivity.class));
+            return true;
+
       }
       return super.onOptionsItemSelected(item);
 

@@ -2,6 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
+        android:id="@+id/menu_add_device"
+        android:icon="@android:drawable/ic_menu_manage"
+        android:showAsAction="ifRoom"
+        android:title="Add Device"/>
+
+    <item
         android:id="@+id/menu_library_refresh"
         android:icon="@drawable/ic_menu_refresh"
         android:title="@string/library_menu_refresh">

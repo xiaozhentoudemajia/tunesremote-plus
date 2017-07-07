@@ -178,4 +178,5 @@
 
     <string name="group_menu_speaker">Speaker</string>
     <string name="group_menu_rename">Rename</string>
+    <string name="ssid_select">SSID Select</string>
 </resources>

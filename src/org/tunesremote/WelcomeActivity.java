@@ -3,27 +3,17 @@ package org.tunesremote;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.TransitionDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.MotionEvent;
-import android.view.View;
 import android.widget.ImageView;
-import android.widget.RatingBar;
 
-import org.tunesremote.daap.Response;
 import org.tunesremote.daap.Session;
 import org.tunesremote.daap.Status;
 import org.tunesremote.util.NotificationService;
@@ -123,13 +113,6 @@ public class WelcomeActivity extends Activity {
         welcome = (ImageView) findViewById(R.id.welcome_page);
         welcome.setFocusable(true);
         welcome.setClickable(true);
-        welcome.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.w(TAG, "u click me !!!");
-                startActivity(new Intent(WelcomeActivity.this, ControlActivity.class));
-            }
-        });
     }
 
     @Override

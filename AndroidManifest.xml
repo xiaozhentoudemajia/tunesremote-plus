@@ -109,6 +109,7 @@
                 android:configChanges="keyboardHidden|screenSize|orientation">
         </activity>
         <activity android:name=".WifiSettingActivity" />
+        <activity android:name=".WifiListActivity" />
 
         <receiver android:name=".util.LockscreenReceiver">
             <intent-filter>
